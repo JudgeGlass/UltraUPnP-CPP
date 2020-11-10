@@ -38,8 +38,6 @@ QString RouterFinder::getUPnPUrl() const{
     qDebug("Request Messasge:\n");
     qDebug() << requestMessage;
     QByteArray bArray = QByteArray::fromStdString(requestMessage.toStdString());
-    //QByteArray bArray;
-    //bArray.append("M-SEARCH * HTTP/1.1\r\nHOS: 239.255.255.250:1900\r\nST: urn:schemas-upnp-org:device:InternetGatewayDevice:1\r\nMAN: \"ssdp:discover\"\r\nMX: 2\r\n\n");
     udpSocket->writeDatagram(bArray.data(), bArray.size(), *SSDP_IP_HOST, 1900);
 
 
