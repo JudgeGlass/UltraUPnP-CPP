@@ -5,7 +5,6 @@
 RouterFinder::RouterFinder(QObject *parent) : QObject(parent)
 {
     udpSocket = new QUdpSocket(this);
-    MY_IP = new QHostAddress("192.168.86.22");
     SSDP_IP_HOST = new QHostAddress(SSDP_IP);
     udpSocket->setSocketOption(QAbstractSocket::MulticastTtlOption, 2);
    // udpSocket->bind(1900, QHostAddress::LocalHost);
@@ -20,12 +19,22 @@ void RouterFinder::read(){
     quint16 senderPort;
     udpSocket->readDatagram(routerResponse.data(), routerResponse.size(), &sender, &senderPort);
     qDebug("Router Response: \n");
-    qDebug() << routerResponse;
+    QString strRouterResponse(routerResponse);
+    QRegExp rx("((?:https?|ftp)://\\S+)");
+    int pos = rx.indexIn(strRouterResponse, 0);
+    if (-1 != pos)
+    {
+        QString cap = rx.cap(0);
+        cap = cap.left(cap.indexOf('\''));
+        descriptorURL.append(cap);
+    }
 }
 
-QString RouterFinder::getUPnPUrl() const{
-    QString url = "";
+QString RouterFinder::getDescriptorURL() const{
+    return descriptorURL;
+}
 
+void RouterFinder::search() const{
     qDebug("Sending multicast request...\n");
     QString requestMessage;
     requestMessage.append("M-SEARCH * HTTP/1.1\r\n");
@@ -35,13 +44,8 @@ QString RouterFinder::getUPnPUrl() const{
     requestMessage.append("MX: 2\r\n");
     requestMessage.append("\n");
 
-    qDebug("Request Messasge:\n");
-    qDebug() << requestMessage;
     QByteArray bArray = QByteArray::fromStdString(requestMessage.toStdString());
     udpSocket->writeDatagram(bArray.data(), bArray.size(), *SSDP_IP_HOST, 1900);
-
-
-    return url;
 }
 
 RouterFinder::~RouterFinder(){
