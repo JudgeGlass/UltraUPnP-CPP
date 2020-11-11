@@ -6,6 +6,8 @@
 #include <QUdpSocket>
 #include <QHostAddress>
 
+#include <router.h>
+
 class RouterFinder : public QObject
 {
     Q_OBJECT
@@ -27,6 +29,8 @@ private:
     QUdpSocket *udpSocket;
 
     QString descriptorURL;
+
+    Router *router;
 };
 
 #endif // ROUTERFINDER_H

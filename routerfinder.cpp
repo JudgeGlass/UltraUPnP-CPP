@@ -18,7 +18,7 @@ void RouterFinder::read(){
     QHostAddress sender;
     quint16 senderPort;
     udpSocket->readDatagram(routerResponse.data(), routerResponse.size(), &sender, &senderPort);
-    qDebug("Router Response: \n");
+
     QString strRouterResponse(routerResponse);
     QRegExp rx("((?:https?|ftp)://\\S+)");
     int pos = rx.indexIn(strRouterResponse, 0);
@@ -28,6 +28,9 @@ void RouterFinder::read(){
         cap = cap.left(cap.indexOf('\''));
         descriptorURL.append(cap);
     }
+
+    qDebug() << "Router Response: " << descriptorURL;
+    router = new Router(descriptorURL);
 }
 
 QString RouterFinder::getDescriptorURL() const{
@@ -46,6 +49,7 @@ void RouterFinder::search() const{
 
     QByteArray bArray = QByteArray::fromStdString(requestMessage.toStdString());
     udpSocket->writeDatagram(bArray.data(), bArray.size(), *SSDP_IP_HOST, 1900);
+
 }
 
 RouterFinder::~RouterFinder(){

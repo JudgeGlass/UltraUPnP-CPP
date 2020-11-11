@@ -1,5 +1,6 @@
 QT -= gui
 QT += network
+QT += xml
 
 CONFIG += c++11 console
 CONFIG -= app_bundle
@@ -10,6 +11,8 @@ CONFIG -= app_bundle
 
 SOURCES += \
         main.cpp \
+        router.cpp \
+        routerargument.cpp \
         routerfinder.cpp
 
 # Default rules for deployment.
@@ -18,4 +21,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
+    router.h \
+    routerargument.h \
     routerfinder.h
