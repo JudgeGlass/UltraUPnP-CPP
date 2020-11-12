@@ -19,14 +19,19 @@ class Router : public QObject
 {
     Q_OBJECT
 public:
+    const QString TCP = "TCP";
+    const QString UDP = "UDP";
+
     Router(const QString descriptorURL);
     explicit Router(QObject *parent = nullptr);
 
     QString getExternalIPAddress();
     QList<RouterArgument> sendCommand(QString action, QList<RouterArgument> &arguments);
     QList<RouterArgument> readRouterResponse(QString &action, QByteArray &response);
+    QList<RouterArgument> getPortMappings();
 
     void portForward(int internalPort, int externalPort, QString host, QString proto);
+    void removeMapping(int externalPort, QString host, QString proto);
     void readXML(QNetworkReply * reply);
 public slots:
 

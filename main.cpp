@@ -1,9 +1,11 @@
 #include <QCoreApplication>
 #include <QtNetwork/QNetworkDatagram>
 #include <QDebug>
+#include <QList>
 
 #include <routerfinder.h>
 #include <router.h>
+#include <routerargument.h>
 
 int main(int argc, char *argv[])
 {
@@ -21,7 +23,10 @@ int main(int argc, char *argv[])
     Router *router = new Router(routerFinder.getDescriptorURL());
     qDebug() << "External IP: " << router->getExternalIPAddress();
 
-    router->portForward(3389, 3389, "192.168.86.22", "TCP");
+    QList<RouterArgument> portMappings = router->getPortMappings();
+    for(RouterArgument ra: portMappings){
+        qInfo() << "<" << ra.getArgName() << ">" << ra.getArgValue() << "</" << ra.getArgName() << ">\n";
+    }
 
 
     delete router;

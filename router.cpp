@@ -143,6 +143,8 @@ QList<RouterArgument> Router::sendCommand(QString action, QList<RouterArgument> 
     return response;
 }
 
+
+
 QList<RouterArgument> Router::readRouterResponse(QString &action, QByteArray &response){
     QList<RouterArgument> responses;
     QDomDocument xmlDom;
@@ -163,6 +165,27 @@ QList<RouterArgument> Router::readRouterResponse(QString &action, QByteArray &re
     return responses;
 }
 
+QList<RouterArgument> Router::getPortMappings()
+{
+    int mappingIndex = 0;
+    QList<RouterArgument> routerArguments;
+    routerArguments << RouterArgument("NewPortMappingIndex", QString::number(mappingIndex));
+
+    QList<RouterArgument> routerResponse;
+    QList<RouterArgument> portMappings;
+
+    while((routerResponse = sendCommand("GetGenericPortMappingEntry", routerArguments)).size() != 0){
+        routerArguments.clear();
+        routerArguments << RouterArgument("NewPortMappingIndex", QString::number(mappingIndex));
+
+        portMappings += routerResponse;
+
+        mappingIndex++;
+    }
+
+    return portMappings;
+}
+
 void Router::portForward(int internalPort, int externalPort, QString host, QString proto)
 {
     qInfo() << "Attempting: " << getExternalIPAddress() << ":" << externalPort << " --> " << host << ":" << internalPort;
@@ -174,7 +197,18 @@ void Router::portForward(int internalPort, int externalPort, QString host, QStri
     routerArguments << RouterArgument("NewInternalPort", QString::number(internalPort));
     routerArguments << RouterArgument("NewPortMappingDescription", "UltraUPnP-QT");
     routerArguments << RouterArgument("NewLeaseDuration", "0");
-    sendCommand("AddPortMapping", routerArguments);
+    sendCommand("AddPortMapping", routerArguments).clear();
+    routerArguments.clear();
+}
+
+void Router::removeMapping(int externalPort, QString host, QString proto)
+{
+    QList<RouterArgument> routerArguments;
+    routerArguments << RouterArgument("NewInternalHost", host);
+    routerArguments << RouterArgument("NewExternalPort", QString::number(externalPort));
+    routerArguments << RouterArgument("NewProtocol", proto);
+    sendCommand("DeletePortMapping", routerArguments).clear();
+    routerArguments.clear();
 }
 
 
