@@ -7,7 +7,13 @@
 class RouterArgument
 {
 public:
-    RouterArgument();
+    RouterArgument(const QString argName, const QString argValue);
+    QString getArgName() const;
+    QString getArgValue() const;
+
+private:
+    const QString argName;
+    const QString argValue;
 };
 
 #endif // ROUTERARGUMENT_H

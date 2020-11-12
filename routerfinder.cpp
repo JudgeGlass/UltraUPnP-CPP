@@ -1,6 +1,7 @@
 #include "routerfinder.h"
 
 #include <QDebug>
+#include <QEventLoop>
 
 RouterFinder::RouterFinder(QObject *parent) : QObject(parent)
 {
@@ -9,15 +10,17 @@ RouterFinder::RouterFinder(QObject *parent) : QObject(parent)
     udpSocket->setSocketOption(QAbstractSocket::MulticastTtlOption, 2);
    // udpSocket->bind(1900, QHostAddress::LocalHost);
 
-    connect(udpSocket, &QUdpSocket::readyRead, this, &RouterFinder::read);
+
 }
 
 void RouterFinder::read(){
     QByteArray routerResponse;
-    routerResponse.resize(udpSocket->pendingDatagramSize());
-    QHostAddress sender;
-    quint16 senderPort;
-    udpSocket->readDatagram(routerResponse.data(), routerResponse.size(), &sender, &senderPort);
+    while(udpSocket->hasPendingDatagrams()){
+        routerResponse.resize(udpSocket->pendingDatagramSize());
+        QHostAddress sender;
+        quint16 senderPort;
+        udpSocket->readDatagram(routerResponse.data(), routerResponse.size(), &sender, &senderPort);
+    }
 
     QString strRouterResponse(routerResponse);
     QRegExp rx("((?:https?|ftp)://\\S+)");
@@ -30,14 +33,14 @@ void RouterFinder::read(){
     }
 
     qDebug() << "Router Response: " << descriptorURL;
-    router = new Router(descriptorURL);
+    isConnected = true;
 }
 
 QString RouterFinder::getDescriptorURL() const{
     return descriptorURL;
 }
 
-void RouterFinder::search() const{
+bool RouterFinder::search(){
     qDebug("Sending multicast request...\n");
     QString requestMessage;
     requestMessage.append("M-SEARCH * HTTP/1.1\r\n");
@@ -49,7 +52,13 @@ void RouterFinder::search() const{
 
     QByteArray bArray = QByteArray::fromStdString(requestMessage.toStdString());
     udpSocket->writeDatagram(bArray.data(), bArray.size(), *SSDP_IP_HOST, 1900);
-
+    while(udpSocket->waitForReadyRead()){
+        read();
+        break;
+    }
+    udpSocket->disconnect();
+    qDebug() << "IS CONNETCTED: " << isConnected;
+    return isConnected;
 }
 
 RouterFinder::~RouterFinder(){

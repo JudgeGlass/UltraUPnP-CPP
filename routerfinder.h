@@ -14,12 +14,19 @@ class RouterFinder : public QObject
 public:
     explicit RouterFinder(QObject *parent = 0);
     ~RouterFinder();
-    void search() const;
+
+    bool search();
+    void portForward(int internalPort, int externalPort, QString host, QString proto);
+
     QString getDescriptorURL() const;
+
+    bool isConnected = false;
+    void read();
+
 signals:
 
 public slots:
-    void read();
+
 
 private:
     const QString SSDP_IP = "239.255.255.250";
@@ -29,8 +36,6 @@ private:
     QUdpSocket *udpSocket;
 
     QString descriptorURL;
-
-    Router *router;
 };
 
 #endif // ROUTERFINDER_H
